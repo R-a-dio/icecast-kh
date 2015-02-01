@@ -48,6 +48,7 @@ static int command_fallback(client_t *client, source_t *source, int response);
 static int command_metadata(client_t *client, source_t *source, int response);
 static int command_shoutcast_metadata(client_t *client, source_t *source);
 static int command_show_listeners(client_t *client, source_t *source, int response);
+static int command_show_listeners_json(client_t *client, source_t *source, int response);
 static int command_move_clients(client_t *client, source_t *source, int response);
 static int command_stats(client_t *client, const char *filename);
 static int command_stats_mount (client_t *client, source_t *source, int response);
@@ -120,7 +121,7 @@ static struct admin_command admin_mount[] =
     { "resetstats",         XSLT,   { command_reset_stats } },
     { "metadata.xsl",       XSLT,   { command_metadata } },
     { "listclients.xsl",    XSLT,   { command_show_listeners } },
-    { "listeners.json",     XSLT,   { command_show_listeners } },
+    { "listeners.json",     XSLT,   { command_show_listeners_json } },
     { "updatemetadata.xsl", XSLT,   { command_updatemetadata } },
     { "killclient.xsl",     XSLT,   { command_kill_client } },
     { "moveclients.xsl",    XSLT,   { command_move_clients } },
@@ -701,6 +702,41 @@ static int command_show_listeners (client_t *client, source_t *source, int respo
     return admin_send_response (doc, client, response, "listclients.xsl");
 }
 
+static int command_show_listeners_json (client_t *client, source_t *source, int response)
+{
+    xmlDocPtr doc;
+    xmlNodePtr node, srcnode;
+    uint64_t id = -1;
+    const char *ID_str = NULL;
+    char buf[22];
+
+    doc = xmlNewDoc(XMLSTR("1.0"));
+    node = xmlNewDocNode(doc, NULL, XMLSTR("icestats"), NULL);
+    srcnode = xmlNewChild(node, NULL, XMLSTR("source"), NULL);
+
+    xmlSetProp(srcnode, XMLSTR("mount"), XMLSTR(source->mount));
+    xmlDocSetRootElement(doc, node);
+
+    snprintf(buf, sizeof(buf), "%lu", source->listeners);
+    xmlNewChild(srcnode, NULL, XMLSTR("listeners"), XMLSTR(buf));
+
+    COMMAND_OPTIONAL(client, "id", ID_str);
+    if (ID_str)
+        sscanf (ID_str, "%" SCNu64, &id);
+
+    if (id == -1)
+        admin_source_listeners (source, srcnode);
+    else
+    {
+        client_t *listener = source_find_client (source, id);
+
+        if (listener)
+            stats_listener_to_xml (listener, srcnode);
+    }
+    thread_rwlock_unlock (&source->lock);
+
+    return admin_send_response (doc, client, response, "listeners.json");
+}
 
 static int command_show_image (client_t *client, const char *mount)
 {
