@@ -1,0 +1,22 @@
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns="http://www.w3.org/1999/xhtml">
+<xsl:output method="text" encoding="UTF-8" media-type="application/json"/>
+<xsl:template match="/icestats">{
+  "mounts" : {
+    <xsl:for-each select="source">
+      "<xsl:value-of select="@mount" />": {
+        "mount": "<xsl:value-of select="@mount" />",
+        "listeners": [
+          <xsl:for-each select="listener">
+            {
+              "id": "<xsl:value-of select="@id" />",
+              "ip": "<xsl:value-of select="IP" />",
+              "user_agent" "<xsl:value-of select="UserAgent" />",
+              "connected_seconds": <xsl:value-of select="Connected" />,
+            }<xsl:if test="position() != last()">,</xsl:if>
+          </xsl:for-each>
+        ]
+      }<xsl:if test="position() != last()">,</xsl:if>
+    </xsl:for-each>
+  }
+}</xsl:template>
+</xsl:stylesheet>
