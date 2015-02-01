@@ -120,6 +120,7 @@ static struct admin_command admin_mount[] =
     { "resetstats",         XSLT,   { command_reset_stats } },
     { "metadata.xsl",       XSLT,   { command_metadata } },
     { "listclients.xsl",    XSLT,   { command_show_listeners } },
+    { "listeners.json",     XSLT,   { command_show_listeners } },
     { "updatemetadata.xsl", XSLT,   { command_updatemetadata } },
     { "killclient.xsl",     XSLT,   { command_kill_client } },
     { "moveclients.xsl",    XSLT,   { command_move_clients } },
