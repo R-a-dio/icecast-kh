@@ -167,9 +167,10 @@ int util_check_valid_extension(const char *uri) {
         p2 = strrchr(uri, '.');
         if (p2) {
             p2++;
-            if (strncmp(p2, "xsl", strlen("xsl")) == 0) {
+            if ((strncmp(p2, "xsl", strlen("xsl")) == 0) || strncmp(p2, "json", strlen("json")) == 0) {
                 /* Build the full path for the request, concatenating the webroot from the config.
                 ** Here would be also a good time to prevent accesses like '../../../../etc/passwd' or somesuch.
+                ** We also hack in "json" support here.
                 */
                 ret = XSLT_CONTENT;
             }
