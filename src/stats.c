@@ -1626,7 +1626,7 @@ void stats_listener_to_xml (client_t *listener, xmlNodePtr parent)
     }
     if (listener->username)
     {
-        xmlChar *str = xmlEncodeEntitiesReentrant (parent->doc, XMLSTR(util_sanitize_json(listener->username)));
+        xmlChar *str = xmlEncodeEntitiesReentrant (parent->doc, XMLSTR(util_json_string_safe(listener->username)));
         xmlNewChild (node, NULL, XMLSTR("username"), str);
         xmlFree (str);
     }
