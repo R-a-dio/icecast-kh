@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <stddef.h>
 #include <ctype.h>
+#include <stdint.h>
 
 #ifndef _WIN32
 #include <sys/time.h>
@@ -1071,6 +1072,14 @@ char *replace_str2(const char *str, const char *old, const char *new)
  * Then again, JSON's spec allows that.
  */
 char *util_json_string_safe(const char *str) {
-    return replace_str2(replace_str2(str, "\\", "\\\\"), "\"", "\\\"");
     /* replace \ with \\ and " with \" because json strings. */
+    char const* const rep1 = replace_str2(str, "\\", "\\\\");
+    if (rep1 == NULL) {
+        return NULL;
+    }
+
+    char const* const rep2 = replace_str2(rep1, "\"", "\\\"");
+    free((void*)rep1);
+
+    return (char*)rep2;
 }
