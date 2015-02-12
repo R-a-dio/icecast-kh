@@ -936,7 +936,11 @@ static xmlNodePtr _dump_stats_to_doc (xmlNodePtr root, const char *show_mount, i
             {
                 stats_node_t *stat = avlnode2->key;
                 if ((flags&STATS_HIDDEN) || (stat->flags&STATS_HIDDEN) == (flags&STATS_HIDDEN))
-                    xmlNewTextChild (xmlnode, NULL, XMLSTR(stat->name), XMLSTR(util_json_string_safe(stat->value)));
+                {
+                    const char *escaped = util_json_string_safe(stat->value);
+                    xmlNewTextChild (xmlnode, NULL, XMLSTR(stat->name), XMLSTR(escaped));
+                    free((void*)escaped);
+                }
                 avlnode2 = avl_get_next (avlnode2);
             }
             avl_tree_unlock (source->stats_tree);
@@ -1596,17 +1600,29 @@ void stats_listener_to_xml (client_t *listener, xmlNodePtr parent)
     header = httpp_getvar (listener->parser, "user-agent");
     if (header && xmlCheckUTF8((unsigned char *)header))
     {
-        xmlChar *str = xmlEncodeEntitiesReentrant (parent->doc, XMLSTR(util_json_string_safe(header)));
-        xmlNewChild (node, NULL, XMLSTR("UserAgent"), str);
-        xmlFree (str);
+        const char *escaped = util_json_string_safe(header);
+        if (escaped != NULL)
+        {
+            xmlChar *str = xmlEncodeEntitiesReentrant (parent->doc, XMLSTR(escaped));
+            xmlNewChild (node, NULL, XMLSTR("UserAgent"), str);
+
+            free((void*)escaped);
+            xmlFree (str);
+        }
     }
 
     header = httpp_getvar (listener->parser, "referer");
     if (header && xmlCheckUTF8((unsigned char *)header))
     {
-        xmlChar *str = xmlEncodeEntitiesReentrant (parent->doc, XMLSTR(util_json_string_safe(header)));
-        xmlNewChild (node, NULL, XMLSTR("Referer"), str);
-        xmlFree (str);
+        const char *escaped = util_json_string_safe(header);
+        if (escaped != NULL)
+        {
+            xmlChar *str = xmlEncodeEntitiesReentrant (parent->doc, XMLSTR(escaped));
+            xmlNewChild (node, NULL, XMLSTR("Referer"), str);
+
+            free((void*)escaped);
+            xmlFree (str);
+        }
     }
 
     if ((listener->flags & (CLIENT_ACTIVE|CLIENT_IN_FSERVE)) == CLIENT_ACTIVE)
@@ -1626,9 +1642,15 @@ void stats_listener_to_xml (client_t *listener, xmlNodePtr parent)
     }
     if (listener->username)
     {
-        xmlChar *str = xmlEncodeEntitiesReentrant (parent->doc, XMLSTR(util_json_string_safe(listener->username)));
-        xmlNewChild (node, NULL, XMLSTR("username"), str);
-        xmlFree (str);
+        const char *escaped = util_json_string_safe(listener->username);
+        if (escaped != NULL)
+        {
+            xmlChar *str = xmlEncodeEntitiesReentrant (parent->doc, XMLSTR(escaped));
+            xmlNewChild (node, NULL, XMLSTR("username"), str);
+
+            free((void*)escaped);
+            xmlFree (str);
+        }
     }
 }
 
